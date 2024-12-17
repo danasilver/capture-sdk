@@ -89,4 +89,26 @@ class CaptureTest {
         // Calling reconfigure a second time does not change the static logger.
         assertThat(logger).isEqualTo(Capture.logger())
     }
+
+    @Test
+    fun dStopRemovesLogger() {
+        val initializer = ContextHolder()
+        initializer.create(ApplicationProvider.getApplicationContext())
+
+        assertThat(Capture.logger()).isNull()
+
+        Logger.start(
+            apiKey = "test1",
+            sessionStrategy = SessionStrategy.Fixed(),
+            dateProvider = null,
+        )
+
+        val logger = Capture.logger()
+        assertThat(logger).isNotNull()
+        assertThat(Logger.deviceId).isNotNull()
+
+        logger?.stop()
+
+        assertThat(Capture.logger()).isNull()
+    }
 }

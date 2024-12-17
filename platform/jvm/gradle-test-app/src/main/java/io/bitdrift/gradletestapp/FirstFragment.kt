@@ -125,6 +125,7 @@ class FirstFragment : Fragment() {
         binding.btnGraphQlRequest.setOnClickListener(this::performGraphQlRequest)
         binding.btnLogMessage.setOnClickListener(this::logMessage)
         binding.btnAppExit.setOnClickListener(this::forceAppExit)
+        binding.btnStopCapture.setOnClickListener(this::stopCapture)
         binding.btnNavigateCompose.setOnClickListener {
             Timber.i("Navigating to Compose Fragment")
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
@@ -240,6 +241,10 @@ class FirstFragment : Fragment() {
             LogLevel.ERROR -> Timber.tag(tag).e(exception, "'log message' with level=%s", logLevel)
         }
         Toast.makeText(view?.context, "'log message' with level=$logLevel", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun stopCapture(view: View) {
+        Logger.stop()
     }
 
     @SuppressLint("VisibleForTests")

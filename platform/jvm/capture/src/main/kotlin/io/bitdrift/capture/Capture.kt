@@ -42,6 +42,21 @@ internal sealed class LoggerState {
      * An attempt to start the logger was made but failed. Subsequent attempts to start the logger will be ignored.
      */
     data object StartFailure : LoggerState()
+
+    /**
+     * The logger is in the process of being stopped. The logger cannot be restarted from this state.
+     */
+    data object Stopping : LoggerState()
+
+    /**
+     * The logger has been successfully stopped. The logger cannot be restarted from this state.
+     */
+    data object Stopped : LoggerState()
+
+    /**
+     * An attempt to stop the logger was made but failed. The logger cannot be restarted from this state.
+     */
+    data object StopFailure : LoggerState()
 }
 
 /**
@@ -61,6 +76,9 @@ object Capture {
             is LoggerState.Starting -> null
             is LoggerState.Started -> state.logger
             is LoggerState.StartFailure -> null
+            is LoggerState.Stopping -> null
+            is LoggerState.Stopped -> null
+            is LoggerState.StopFailure -> null
         }
     }
 
@@ -143,7 +161,7 @@ object Capture {
                 Log.w(
                     "capture",
                     "Attempted to initialize Capture before androidx.startup.Initializers " +
-                        "are run. Aborting logger initialization.",
+                            "are run. Aborting logger initialization.",
                 )
                 return
             }
@@ -165,8 +183,33 @@ object Capture {
                     Log.w("capture", "Failed to start Capture", e)
                     default.set(LoggerState.StartFailure)
                 }
+            } else if (default.get().equals(LoggerState.Stopped)) {
+                // Provide a more helpful error message if Capture has already been stopped.
+                Log.w("capture", "Capture has been stopped already and cannot be started")
             } else {
                 Log.w("capture", "Multiple attempts to start Capture")
+            }
+        }
+
+        /**
+         * Stops the Capture SDK if it has been started. Subsequent calls are no-ops and the logger
+         * cannot be restarted
+         */
+        @JvmStatic
+        internal fun stop() {
+            val logger = logger()
+            if (logger != null) {
+                default.set(LoggerState.Stopping)
+
+                try {
+                    logger.stop()
+                    default.set(LoggerState.Stopped)
+                } catch (e: Throwable) {
+                    Log.w("capture", "Failed to stop Capture", e)
+                    default.set(LoggerState.StopFailure)
+                }
+            } else {
+                Log.w("capture", "Attempted to stop Capture, but it isn't started")
             }
         }
 

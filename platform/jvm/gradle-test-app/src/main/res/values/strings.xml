@@ -12,6 +12,7 @@
     <string name="log_msg">Log Message</string>
     <string name="app_exit">Force App Exit</string>
     <string name="navigate_second">Navigate to Compose Screen</string>
+    <string name="stop_capture">Stop Capture</string>
     <string name="previous">Navigate Back</string>
     <string name="log_level_label">Log Level</string>
 

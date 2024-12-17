@@ -341,6 +341,24 @@ internal class LoggerImpl(
         CaptureJniLibrary.removeLogField(this.loggerId, key)
     }
 
+    override fun stop() {
+        // TODO: Consider releasing other resources if the logger cannot be restarted.
+
+        log(level = LogLevel.INFO) {
+            "Received request to stop logging. Shutting down logger."
+        }
+
+        // Calling destroyLogger causes a segfault :(
+        // CaptureJniLibrary.destroyLogger(this.loggerId)
+
+        appExitLogger.uninstallAppExitLogger()
+
+        // Stop lifecycle event listeners.
+        // Note: If we allow the logger to be restarted, we should remove existing listeners
+        // to avoid an indefinitely long list.
+        eventsListenerTarget.stop()
+    }
+
     @JvmName("logFields")
     @Suppress("TooGenericExceptionCaught")
     internal fun log(
